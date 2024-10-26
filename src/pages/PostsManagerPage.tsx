@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { Edit2, MessageSquare, Plus, Search, ThumbsDown, ThumbsUp, Trash2 } from "lucide-react"
 import { useLocation, useNavigate } from "react-router-dom"
 import {
@@ -73,11 +73,11 @@ const PostsManager = () => {
     let postsData
     let usersData
 
-    fetch(`https://dummyjson.com/posts?limit=${limit}&skip=${skip}`)
+    fetch(`/api/posts?limit=${limit}&skip=${skip}`)
       .then((response) => response.json())
       .then((data) => {
         postsData = data
-        return fetch("https://dummyjson.com/users?limit=0&select=username,image")
+        return fetch("/api/users?limit=0&select=username,image")
       })
       .then((response) => response.json())
       .then((users) => {
@@ -100,7 +100,7 @@ const PostsManager = () => {
   // 태그 가져오기
   const fetchTags = async () => {
     try {
-      const response = await fetch("https://dummyjson.com/posts/tags")
+      const response = await fetch("/api/posts/tags")
       const data = await response.json()
       setTags(data)
     } catch (error) {
@@ -116,7 +116,7 @@ const PostsManager = () => {
     }
     setLoading(true)
     try {
-      const response = await fetch(`https://dummyjson.com/posts/search?q=${searchQuery}`)
+      const response = await fetch(`/api/posts/search?q=${searchQuery}`)
       const data = await response.json()
       setPosts(data.posts)
       setTotal(data.total)
@@ -135,8 +135,8 @@ const PostsManager = () => {
     setLoading(true)
     try {
       const [postsResponse, usersResponse] = await Promise.all([
-        fetch(`https://dummyjson.com/posts/tag/${tag}`),
-        fetch("https://dummyjson.com/users?limit=0&select=username,image"),
+        fetch(`/api/posts/tag/${tag}`),
+        fetch("/api/users?limit=0&select=username,image"),
       ])
       const postsData = await postsResponse.json()
       const usersData = await usersResponse.json()
@@ -157,7 +157,7 @@ const PostsManager = () => {
   // 게시물 추가
   const addPost = async () => {
     try {
-      const response = await fetch("https://dummyjson.com/posts/add", {
+      const response = await fetch("/api/posts/add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newPost),
@@ -174,7 +174,7 @@ const PostsManager = () => {
   // 게시물 업데이트
   const updatePost = async () => {
     try {
-      const response = await fetch(`https://dummyjson.com/posts/${selectedPost.id}`, {
+      const response = await fetch(`/api/posts/${selectedPost.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(selectedPost),
@@ -190,7 +190,7 @@ const PostsManager = () => {
   // 게시물 삭제
   const deletePost = async (id) => {
     try {
-      await fetch(`https://dummyjson.com/posts/${id}`, {
+      await fetch(`/api/posts/${id}`, {
         method: "DELETE",
       })
       setPosts(posts.filter((post) => post.id !== id))
@@ -203,7 +203,7 @@ const PostsManager = () => {
   const fetchComments = async (postId) => {
     if (comments[postId]) return // 이미 불러온 댓글이 있으면 다시 불러오지 않음
     try {
-      const response = await fetch(`https://dummyjson.com/comments/post/${postId}`)
+      const response = await fetch(`/api/comments/post/${postId}`)
       const data = await response.json()
       setComments((prev) => ({ ...prev, [postId]: data.comments }))
     } catch (error) {
@@ -214,7 +214,7 @@ const PostsManager = () => {
   // 댓글 추가
   const addComment = async () => {
     try {
-      const response = await fetch("https://dummyjson.com/comments/add", {
+      const response = await fetch("/api/comments/add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newComment),
@@ -234,7 +234,7 @@ const PostsManager = () => {
   // 댓글 업데이트
   const updateComment = async () => {
     try {
-      const response = await fetch(`https://dummyjson.com/comments/${selectedComment.id}`, {
+      const response = await fetch(`/api/comments/${selectedComment.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ body: selectedComment.body }),
@@ -253,7 +253,7 @@ const PostsManager = () => {
   // 댓글 삭제
   const deleteComment = async (id, postId) => {
     try {
-      await fetch(`https://dummyjson.com/comments/${id}`, {
+      await fetch(`/api/comments/${id}`, {
         method: "DELETE",
       })
       setComments((prev) => ({
@@ -268,7 +268,7 @@ const PostsManager = () => {
   // 댓글 좋아요
   const likeComment = async (id, postId) => {
     try {
-      const response = await fetch(`https://dummyjson.com/comments/${id}`, {
+      const response = await fetch(`/api/comments/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ likes: comments[postId].find((c) => c.id === id).likes + 1 }),
@@ -293,7 +293,7 @@ const PostsManager = () => {
   // 사용자 모달 열기
   const openUserModal = async (user) => {
     try {
-      const response = await fetch(`https://dummyjson.com/users/${user.id}`)
+      const response = await fetch(`/api/users/${user.id}`)
       const userData = await response.json()
       setSelectedUser(userData)
       setShowUserModal(true)
@@ -389,9 +389,9 @@ const PostsManager = () => {
             <TableCell>
               <div className="flex items-center gap-2">
                 <ThumbsUp className="w-4 h-4" />
-                <span>{post.reactions.likes}</span>
+                <span>{post.reactions?.likes || 0}</span>
                 <ThumbsDown className="w-4 h-4" />
-                <span>{post.reactions.dislikes}</span>
+                <span>{post.reactions?.dislikes || 0}</span>
               </div>
             </TableCell>
             <TableCell>

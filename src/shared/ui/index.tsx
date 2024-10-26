@@ -1,23 +1,11 @@
-import React from "react"
-import { cva } from "class-variance-authority"
+import * as React from "react"
+import { forwardRef } from "react"
 import * as SelectPrimitive from "@radix-ui/react-select"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
-import {
-  Search,
-  Plus,
-  Edit2,
-  Trash2,
-  ThumbsUp,
-  ThumbsDown,
-  Eye,
-  MessageSquare,
-  Check,
-  ChevronDown,
-  X,
-} from "lucide-react"
+import { Check, ChevronDown, X } from "lucide-react"
+import { cva, VariantProps } from "class-variance-authority"
 
-// 버튼 컴포넌트
-export const buttonVariants = cva(
+const buttonVariants = cva(
   "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background",
   {
     variants: {
@@ -43,13 +31,18 @@ export const buttonVariants = cva(
   },
 )
 
-export const Button = React.forwardRef(({ className, variant, size, ...props }, ref) => {
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
+  className?: string
+}
+
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({ className, variant, size, ...props }, ref) => {
   return <button className={buttonVariants({ variant, size, className })} ref={ref} {...props} />
 })
+
 Button.displayName = "Button"
 
 // 입력 컴포넌트
-export const Input = React.forwardRef(({ className, type, ...props }, ref) => {
+export const Input = forwardRef(({ className, type, ...props }, ref) => {
   return (
     <input
       type={type}
@@ -62,28 +55,28 @@ export const Input = React.forwardRef(({ className, type, ...props }, ref) => {
 Input.displayName = "Input"
 
 // 카드 컴포넌트
-export const Card = React.forwardRef(({ className, ...props }, ref) => (
+export const Card = forwardRef(({ className, ...props }, ref) => (
   <div ref={ref} className={`rounded-lg border bg-card text-card-foreground shadow-sm ${className}`} {...props} />
 ))
 Card.displayName = "Card"
 
-export const CardHeader = React.forwardRef(({ className, ...props }, ref) => (
+export const CardHeader = forwardRef(({ className, ...props }, ref) => (
   <div ref={ref} className={`flex flex-col space-y-1.5 p-6 ${className}`} {...props} />
 ))
 CardHeader.displayName = "CardHeader"
 
-export const CardTitle = React.forwardRef(({ className, ...props }, ref) => (
+export const CardTitle = forwardRef(({ className, ...props }, ref) => (
   <h3 ref={ref} className={`text-2xl font-semibold leading-none tracking-tight ${className}`} {...props} />
 ))
 CardTitle.displayName = "CardTitle"
 
-export const CardContent = React.forwardRef(({ className, ...props }, ref) => (
+export const CardContent = forwardRef(({ className, ...props }, ref) => (
   <div ref={ref} className={`p-6 pt-0 ${className}`} {...props} />
 ))
 CardContent.displayName = "CardContent"
 
 // 텍스트 영역 컴포넌트
-export const Textarea = React.forwardRef(({ className, ...props }, ref) => {
+export const Textarea = forwardRef(({ className, ...props }, ref) => {
   return (
     <textarea
       className={`flex min-h-[150px] w-full rounded-md border border-input bg-white px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
@@ -99,7 +92,7 @@ export const Select = SelectPrimitive.Root
 export const SelectGroup = SelectPrimitive.Group
 export const SelectValue = SelectPrimitive.Value
 
-export const SelectTrigger = React.forwardRef(({ className, children, ...props }, ref) => (
+export const SelectTrigger = forwardRef(({ className, children, ...props }, ref) => (
   <SelectPrimitive.Trigger
     ref={ref}
     className={`flex h-10 items-center justify-between rounded-md border border-input bg-white px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
@@ -111,7 +104,7 @@ export const SelectTrigger = React.forwardRef(({ className, children, ...props }
 ))
 SelectTrigger.displayName = SelectPrimitive.Trigger.displayName
 
-export const SelectContent = React.forwardRef(({ className, children, position = "popper", ...props }, ref) => (
+export const SelectContent = forwardRef(({ className, children, position = "popper", ...props }, ref) => (
   <SelectPrimitive.Portal>
     <SelectPrimitive.Content
       ref={ref}
@@ -125,7 +118,7 @@ export const SelectContent = React.forwardRef(({ className, children, position =
 ))
 SelectContent.displayName = SelectPrimitive.Content.displayName
 
-export const SelectItem = React.forwardRef(({ className, children, ...props }, ref) => (
+export const SelectItem = forwardRef(({ className, children, ...props }, ref) => (
   <SelectPrimitive.Item
     ref={ref}
     className={`relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 ${className}`}
@@ -147,7 +140,7 @@ export const DialogTrigger = DialogPrimitive.Trigger
 export const DialogPortal = DialogPrimitive.Portal
 export const DialogOverlay = DialogPrimitive.Overlay
 
-export const DialogContent = React.forwardRef(({ className, children, ...props }, ref) => (
+export const DialogContent = forwardRef(({ className, children, ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay className="fixed inset-0 z-50 bg-black/50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
     <DialogPrimitive.Content
@@ -170,7 +163,7 @@ export const DialogHeader = ({ className, ...props }) => (
 )
 DialogHeader.displayName = "DialogHeader"
 
-export const DialogTitle = React.forwardRef(({ className, ...props }, ref) => (
+export const DialogTitle = forwardRef(({ className, ...props }, ref) => (
   <DialogPrimitive.Title
     ref={ref}
     className={`text-lg font-semibold leading-none tracking-tight ${className}`}
@@ -180,24 +173,24 @@ export const DialogTitle = React.forwardRef(({ className, ...props }, ref) => (
 DialogTitle.displayName = DialogPrimitive.Title.displayName
 
 // 테이블 컴포넌트
-export const Table = React.forwardRef(({ className, ...props }, ref) => (
+export const Table = forwardRef(({ className, ...props }, ref) => (
   <div className="w-full overflow-auto">
     <table ref={ref} className={`table-fixed w-full caption-bottom text-sm ${className}`} {...props} />
   </div>
 ))
 Table.displayName = "Table"
 
-export const TableHeader = React.forwardRef(({ className, ...props }, ref) => (
+export const TableHeader = forwardRef(({ className, ...props }, ref) => (
   <thead ref={ref} className={`[&_tr]:border-b ${className}`} {...props} />
 ))
 TableHeader.displayName = "TableHeader"
 
-export const TableBody = React.forwardRef(({ className, ...props }, ref) => (
+export const TableBody = forwardRef(({ className, ...props }, ref) => (
   <tbody ref={ref} className={`[&_tr:last-child]:border-0 ${className}`} {...props} />
 ))
 TableBody.displayName = "TableBody"
 
-export const TableRow = React.forwardRef(({ className, ...props }, ref) => (
+export const TableRow = forwardRef(({ className, ...props }, ref) => (
   <tr
     ref={ref}
     className={`border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted h-14 ${className}`}
@@ -206,7 +199,7 @@ export const TableRow = React.forwardRef(({ className, ...props }, ref) => (
 ))
 TableRow.displayName = "TableRow"
 
-export const TableHead = React.forwardRef(({ className, ...props }, ref) => (
+export const TableHead = forwardRef(({ className, ...props }, ref) => (
   <th
     ref={ref}
     className={`h-10 px-2 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 ${className}`}
@@ -215,7 +208,7 @@ export const TableHead = React.forwardRef(({ className, ...props }, ref) => (
 ))
 TableHead.displayName = "TableHead"
 
-export const TableCell = React.forwardRef(({ className, ...props }, ref) => (
+export const TableCell = forwardRef(({ className, ...props }, ref) => (
   <td ref={ref} className={`p-2 align-middle [&:has([role=checkbox])]:pr-0 ${className}`} {...props} />
 ))
 TableCell.displayName = "TableCell"

@@ -1,16 +1,6 @@
 import React, { useEffect, useState } from "react"
-import {
-  ChevronDown,
-  ChevronRight,
-  Edit2,
-  MessageSquare,
-  Plus,
-  Search,
-  ThumbsDown,
-  ThumbsUp,
-  Trash2,
-} from "lucide-react"
-import { useNavigate, useLocation } from "react-router-dom"
+import { Edit2, MessageSquare, Plus, Search, ThumbsDown, ThumbsUp, Trash2 } from "lucide-react"
+import { useLocation, useNavigate } from "react-router-dom"
 import {
   Button,
   Card,
@@ -138,7 +128,7 @@ const PostsManager = () => {
 
   // 태그별 게시물 가져오기
   const fetchPostsByTag = async (tag) => {
-    if (!tag || tag === 'all') {
+    if (!tag || tag === "all") {
       fetchPosts()
       return
     }
@@ -146,7 +136,7 @@ const PostsManager = () => {
     try {
       const [postsResponse, usersResponse] = await Promise.all([
         fetch(`https://dummyjson.com/posts/tag/${tag}`),
-        fetch("https://dummyjson.com/users?limit=0&select=username,image")
+        fetch("https://dummyjson.com/users?limit=0&select=username,image"),
       ])
       const postsData = await postsResponse.json()
       const usersData = await usersResponse.json()
@@ -303,12 +293,12 @@ const PostsManager = () => {
   // 사용자 모달 열기
   const openUserModal = async (user) => {
     try {
-      const response = await fetch(`https://dummyjson.com/users/${user.id}`);
-      const userData = await response.json();
-      setSelectedUser(userData);
-      setShowUserModal(true);
+      const response = await fetch(`https://dummyjson.com/users/${user.id}`)
+      const userData = await response.json()
+      setSelectedUser(userData)
+      setShowUserModal(true)
     } catch (error) {
-      console.error("사용자 정보 가져오기 오류:", error);
+      console.error("사용자 정보 가져오기 오류:", error)
     }
   }
 
@@ -374,10 +364,11 @@ const PostsManager = () => {
                   {post.tags.map((tag) => (
                     <span
                       key={tag}
-                      className={`px-1 text-[9px] font-semibold rounded-[4px] cursor-pointer ${selectedTag === tag
-                        ? 'text-white bg-blue-500 hover:bg-blue-600'
-                        : 'text-blue-800 bg-blue-100 hover:bg-blue-200'
-                        }`}
+                      className={`px-1 text-[9px] font-semibold rounded-[4px] cursor-pointer ${
+                        selectedTag === tag
+                          ? "text-white bg-blue-500 hover:bg-blue-600"
+                          : "text-blue-800 bg-blue-100 hover:bg-blue-200"
+                      }`}
                       onClick={() => {
                         setSelectedTag(tag)
                         updateURL()
@@ -686,12 +677,25 @@ const PostsManager = () => {
             <img src={selectedUser?.image} alt={selectedUser?.username} className="w-24 h-24 rounded-full mx-auto" />
             <h3 className="text-xl font-semibold text-center">{selectedUser?.username}</h3>
             <div className="space-y-2">
-              <p><strong>이름:</strong> {selectedUser?.firstName} {selectedUser?.lastName}</p>
-              <p><strong>나이:</strong> {selectedUser?.age}</p>
-              <p><strong>이메일:</strong> {selectedUser?.email}</p>
-              <p><strong>전화번호:</strong> {selectedUser?.phone}</p>
-              <p><strong>주소:</strong> {selectedUser?.address?.address}, {selectedUser?.address?.city}, {selectedUser?.address?.state}</p>
-              <p><strong>직장:</strong> {selectedUser?.company?.name} - {selectedUser?.company?.title}</p>
+              <p>
+                <strong>이름:</strong> {selectedUser?.firstName} {selectedUser?.lastName}
+              </p>
+              <p>
+                <strong>나이:</strong> {selectedUser?.age}
+              </p>
+              <p>
+                <strong>이메일:</strong> {selectedUser?.email}
+              </p>
+              <p>
+                <strong>전화번호:</strong> {selectedUser?.phone}
+              </p>
+              <p>
+                <strong>주소:</strong> {selectedUser?.address?.address}, {selectedUser?.address?.city},{" "}
+                {selectedUser?.address?.state}
+              </p>
+              <p>
+                <strong>직장:</strong> {selectedUser?.company?.name} - {selectedUser?.company?.title}
+              </p>
             </div>
           </div>
         </DialogContent>

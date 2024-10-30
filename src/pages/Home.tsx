@@ -638,7 +638,7 @@ const Home = () => {
                   className="pl-8"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && searchPosts()}
+                  onKeyDown={(e) => e.key === 'Enter' && searchPosts()}
                 />
               </div>
             </div>

@@ -142,7 +142,7 @@ const NEW_POST: NewPost = {
   userId: 1,
 };
 
-const PostsManager = () => {
+const Home = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
@@ -891,4 +891,4 @@ const PostsManager = () => {
   );
 };
 
-export default PostsManager;
+export default Home;

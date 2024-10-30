@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { MemoryRouter } from 'react-router-dom';
-import PostsManager from '../src/pages/PostsManagerPage';
+import Home from '../src/pages/Home';
 import * as React from 'react';
 import '@testing-library/jest-dom';
 import { TEST_POSTS, TEST_SEARCH_POST, TEST_USERS } from './mockData';
@@ -44,18 +44,18 @@ afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 // 테스트에 공통으로 사용될 render 함수
-const renderPostsManager = () => {
+const renderHome = () => {
   return render(
     <MemoryRouter>
-      <PostsManager />
+      <Home />
     </MemoryRouter>,
   );
 };
 
-describe('PostsManager', () => {
+describe('Home', () => {
   it('게시물을 렌더링하고 검색을 허용합니다', async () => {
     const user = userEvent.setup();
-    renderPostsManager();
+    renderHome();
 
     // 로딩 상태 확인 (선택적)
     expect(screen.getByText(/로딩 중.../i)).toBeInTheDocument();
@@ -101,7 +101,7 @@ describe('PostsManager', () => {
       }),
     );
 
-    renderPostsManager();
+    renderHome();
 
     // 기존 게시물들이 로드될 때까지 대기
     await waitFor(() => {

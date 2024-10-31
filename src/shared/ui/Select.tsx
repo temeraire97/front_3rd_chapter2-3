@@ -12,7 +12,7 @@ import {
   ItemIndicator,
   ItemText,
 } from '@radix-ui/react-select';
-import { WithClassName } from '@shared/lib/types';
+import { WithClassName } from '@shared/model/types';
 
 // 선택 컴포넌트
 export const Select = Root;

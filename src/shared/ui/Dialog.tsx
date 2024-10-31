@@ -1,7 +1,7 @@
 import { forwardRef, HTMLAttributes } from 'react';
 import { X } from 'lucide-react';
 import { Root, Trigger, Portal, Overlay, Content, Close, Title } from '@radix-ui/react-dialog';
-import { WithClassName } from '@shared/lib/types';
+import { WithClassName } from '@shared/model/types';
 
 // 대화상자 컴포넌트
 export const Dialog = Root;

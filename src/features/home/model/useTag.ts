@@ -1,11 +1,16 @@
-import { useAtom } from 'jotai';
-import type { Tag } from '@/entities/home/model/tagAtoms';
-import { selectedTagAtom } from '@/entities/home/model/tagAtoms';
+import { useQuery } from '@tanstack/react-query';
+import { getTags } from '@/entities/home/api/tagApi';
+import { Tag } from '@/entities/home/model/types';
 
 const useTag = () => {
-  const [selectedTag, setSelectedTag] = useAtom<Tag['slug']>(selectedTagAtom);
+  const { data } = useQuery<Tag[], Error>({
+    queryKey: ['tags'],
+    queryFn: getTags,
+  });
 
-  return { selectedTag, setSelectedTag };
+  return {
+    tags: data ?? [],
+  };
 };
 
 export default useTag;

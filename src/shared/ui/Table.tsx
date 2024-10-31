@@ -1,5 +1,5 @@
 import { forwardRef } from 'react';
-import { WithClassName } from '@shared/lib/types';
+import { WithClassName } from '@shared/model/types';
 
 // 테이블 컴포넌트
 export const Table = forwardRef<HTMLTableElement, WithClassName<'table'>>(({ className, ...props }, ref) => (

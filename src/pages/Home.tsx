@@ -1,3 +1,4 @@
+import { useAtom } from 'jotai';
 import { useEffect, useState } from 'react';
 import { Edit2, MessageSquare, Plus, Search, ThumbsDown, ThumbsUp, Trash2 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -10,167 +11,62 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Textarea } from '@/shared/ui/Textarea';
 import HighlightText from '@/shared/ui/Highlight';
 
-export interface Tag {
-  slug: string;
-  name: string;
-  url: string;
-}
+import type { Post, User } from '@/entities/home/model/types';
 
-export interface Response {
-  total: number;
-  skip: number;
-  limit: number;
-}
+import useTag from '@/features/home/model/useTag';
+import usePost from '@/features/home/model/usePost';
+import useComment from '@/features/home/model/useComment';
 
-export interface PostsResponse extends Response {
-  posts: Post[];
-}
+import TagList from '@/features/home/ui/TagList';
 
-export interface UserResponse extends Response {
-  users: User[];
-}
-
-export interface NewPost {
-  title: string;
-  body: string;
-  userId: User['id'];
-}
-
-export interface Post extends NewPost {
-  id: number;
-  tags: string[];
-  reactions: Reactions;
-  views: number;
-  author?: User;
-}
-
-export interface Reactions {
-  likes: number;
-  dislikes: number;
-}
-
-export interface User {
-  id: number;
-  firstName: string;
-  lastName: string;
-  maidenName: string;
-  age: number;
-  gender: string;
-  email: string;
-  phone: string;
-  username: string;
-  password: string;
-  birthDate: string;
-  image: string;
-  bloodGroup: string;
-  height: number;
-  weight: number;
-  eyeColor: string;
-  hair: Hair;
-  ip: string;
-  address: Address;
-  macAddress: string;
-  university: string;
-  bank: Bank;
-  company: Company;
-  ein: string;
-  ssn: string;
-  userAgent: string;
-  crypto: Crypto;
-  role: string;
-}
-
-export interface Hair {
-  color: string;
-  type: string;
-}
-
-export interface Address {
-  address: string;
-  city: string;
-  state: string;
-  stateCode: string;
-  postalCode: string;
-  coordinates: Coordinates;
-  country: string;
-}
-
-export interface Coordinates {
-  lat: number;
-  lng: number;
-}
-
-export interface Bank {
-  cardExpire: string;
-  cardNumber: string;
-  cardType: string;
-  currency: string;
-  iban: string;
-}
-
-export interface Company {
-  department: string;
-  name: string;
-  title: string;
-  address: Address;
-}
-
-export interface Crypto {
-  coin: string;
-  wallet: string;
-  network: string;
-}
-
-export interface NewCommnet {
-  body: string;
-  postId: Post['id'] | null;
-  userId: User['id'];
-}
-
-export interface Comment extends NewCommnet {
-  id: number;
-  likes: number;
-  user: User;
-}
-
-export interface Comments {
-  [postId: Post['id']]: Comment[];
-}
-
-const NEW_POST: NewPost = {
-  title: '',
-  body: '',
-  userId: 1,
-};
+import { selectedPost as selectedPostAtom, newPost as newPostAtom } from '@entities/home/model/postAtoms';
 
 const Home = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
 
-  // 상태 관리
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [total, setTotal] = useState<number>(0);
-  const [skip, setSkip] = useState<number>(parseInt(queryParams.get('skip') || '0'));
-  const [limit, setLimit] = useState<number>(parseInt(queryParams.get('limit') || '10'));
-  const [searchQuery, setSearchQuery] = useState<string>(queryParams.get('search') || '');
-  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
-  const [sortBy, setSortBy] = useState<string>(queryParams.get('sortBy') || '');
-  const [sortOrder, setSortOrder] = useState<string>(queryParams.get('sortOrder') || 'asc');
+  const {
+    comments,
+    selectedComment,
+    newComment,
+    setSelectedComment,
+    setNewComment,
+    fetchComments,
+    addComment,
+    updateComment,
+    deleteComment,
+    likeComment,
+  } = useComment();
+
+  const { tags } = useTag();
+  const [selectedPost, setSelectedPost] = useAtom(selectedPostAtom);
+  const [newPost, setNewPost] = useAtom(newPostAtom);
+
   const [showAddDialog, setShowAddDialog] = useState<boolean>(false);
   const [showEditDialog, setShowEditDialog] = useState<boolean>(false);
-  const [newPost, setNewPost] = useState<NewPost>(NEW_POST);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [tags, setTags] = useState<Tag[]>([]);
-  const [selectedTag, setSelectedTag] = useState<string>(queryParams.get('tag') || '');
-  const [comments, setComments] = useState<Comments>({});
-  const [selectedComment, setSelectedComment] = useState<Comment | null>(null);
-  const [newComment, setNewComment] = useState<NewCommnet>({ body: '', postId: null, userId: 1 });
   const [showAddCommentDialog, setShowAddCommentDialog] = useState<boolean>(false);
   const [showEditCommentDialog, setShowEditCommentDialog] = useState<boolean>(false);
   const [showPostDetailDialog, setShowPostDetailDialog] = useState<boolean>(false);
+
   const [showUserModal, setShowUserModal] = useState<boolean>(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+
+  const [skip, setSkip] = useState<number>(parseInt(queryParams.get('skip') || '0'));
+  const [limit, setLimit] = useState<number>(parseInt(queryParams.get('limit') || '10'));
+  const [searchQuery, setSearchQuery] = useState<string>(queryParams.get('search') || '');
+  const [sortBy, setSortBy] = useState<string>(queryParams.get('sortBy') || '');
+  const [sortOrder, setSortOrder] = useState<string>(queryParams.get('sortOrder') || 'asc');
+  const [selectedTag, setSelectedTag] = useState<string>(queryParams.get('tag') || 'all');
+
+  const { posts, total, loading, addPost, updatePost, deletePost } = usePost({
+    skip: skip,
+    limit: limit,
+    search: searchQuery,
+    sortBy: sortBy,
+    sortOrder: sortOrder,
+    tag: selectedTag,
+  });
 
   // URL 업데이트 함수
   const updateURL = () => {
@@ -182,227 +78,6 @@ const Home = () => {
     if (sortOrder) params.set('sortOrder', sortOrder);
     if (selectedTag) params.set('tag', selectedTag);
     navigate(`?${params.toString()}`);
-  };
-
-  // 게시물 가져오기
-  const fetchPosts = async () => {
-    setLoading(true);
-    try {
-      const [postsResponse, usersResponse] = await Promise.all([
-        fetch(`/api/posts?limit=${limit}&skip=${skip}`),
-        fetch('/api/users?limit=0&select=username,image'),
-      ]);
-
-      const postsData: PostsResponse = await postsResponse.json();
-      const usersData: UserResponse = await usersResponse.json();
-
-      const postsWithUsers = postsData.posts.map((post) => ({
-        ...post,
-        author: usersData.users.find((user) => user.id === post.userId),
-      }));
-
-      setPosts(postsWithUsers);
-      setTotal(postsData.total);
-    } catch (error) {
-      console.error('게시물 가져오기 오류:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 태그 가져오기
-  const fetchTags = async () => {
-    try {
-      const response = await fetch('/api/posts/tags');
-      const data = await response.json();
-      setTags(data);
-    } catch (error) {
-      console.error('태그 가져오기 오류:', error);
-    }
-  };
-
-  // 게시물 검색
-  const searchPosts = async () => {
-    if (!searchQuery) {
-      fetchPosts();
-      return;
-    }
-    setLoading(true);
-    try {
-      const response = await fetch(`/api/posts/search?q=${searchQuery}`);
-      const data = await response.json();
-      setPosts(data.posts);
-      setTotal(data.total);
-    } catch (error) {
-      console.error('게시물 검색 오류:', error);
-    }
-    setLoading(false);
-  };
-
-  // 태그별 게시물 가져오기
-  const fetchPostsByTag = async (tag: Tag['slug']) => {
-    if (!tag || tag === 'all') {
-      fetchPosts();
-      return;
-    }
-    setLoading(true);
-    try {
-      const [postsResponse, usersResponse] = await Promise.all([
-        fetch(`/api/posts/tag/${tag}`),
-        fetch('/api/users?limit=0&select=username,image'),
-      ]);
-      const postsData: PostsResponse = await postsResponse.json();
-      const usersData: UserResponse = await usersResponse.json();
-
-      const postsWithUsers = postsData.posts.map((post) => ({
-        ...post,
-        author: usersData.users.find((user) => user.id === post.userId),
-      }));
-
-      setPosts(postsWithUsers);
-      setTotal(postsData.total);
-    } catch (error) {
-      console.error('태그별 게시물 가져오기 오류:', error);
-    }
-    setLoading(false);
-  };
-
-  // 게시물 추가
-  const addPost = async () => {
-    try {
-      const response = await fetch('/api/posts/add', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newPost),
-      });
-      const data = await response.json();
-      setPosts([data, ...posts]);
-      setShowAddDialog(false);
-      setNewPost(NEW_POST);
-    } catch (error) {
-      console.error('게시물 추가 오류:', error);
-    }
-  };
-
-  // 게시물 업데이트
-  const updatePost = async () => {
-    if (!selectedPost) return;
-
-    try {
-      const response = await fetch(`/api/posts/${selectedPost.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(selectedPost),
-      });
-      const data = await response.json();
-      setPosts(posts.map((post) => (post.id === data.id ? data : post)));
-      setShowEditDialog(false);
-    } catch (error) {
-      console.error('게시물 업데이트 오류:', error);
-    }
-  };
-
-  // 게시물 삭제
-  const deletePost = async (id: Post['id']) => {
-    try {
-      await fetch(`/api/posts/${id}`, {
-        method: 'DELETE',
-      });
-      setPosts(posts.filter((post) => post.id !== id));
-    } catch (error) {
-      console.error('게시물 삭제 오류:', error);
-    }
-  };
-
-  // 댓글 가져오기
-  const fetchComments = async (postId: Post['id']) => {
-    if (comments[postId]) return; // 이미 불러온 댓글이 있으면 다시 불러오지 않음
-    try {
-      const response = await fetch(`/api/comments/post/${postId}`);
-      const data = await response.json();
-      setComments((prev) => ({ ...prev, [postId]: data.comments }));
-    } catch (error) {
-      console.error('댓글 가져오기 오류:', error);
-    }
-  };
-
-  // 댓글 추가
-  const addComment = async () => {
-    try {
-      const response = await fetch('/api/comments/add', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newComment),
-      });
-      const data = await response.json();
-      setComments((prev) => ({
-        ...prev,
-        [data.postId]: [...(prev[data.postId] || []), data],
-      }));
-      setShowAddCommentDialog(false);
-      setNewComment({ body: '', postId: null, userId: 1 });
-    } catch (error) {
-      console.error('댓글 추가 오류:', error);
-    }
-  };
-
-  // 댓글 업데이트
-  const updateComment = async () => {
-    if (!selectedComment) return;
-
-    try {
-      const response = await fetch(`/api/comments/${selectedComment.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ body: selectedComment.body }),
-      });
-      const data = await response.json();
-      setComments((prev) => ({
-        ...prev,
-        [data.postId]: prev[data.postId].map((comment) => (comment.id === data.id ? data : comment)),
-      }));
-      setShowEditCommentDialog(false);
-    } catch (error) {
-      console.error('댓글 업데이트 오류:', error);
-    }
-  };
-
-  // 댓글 삭제
-  const deleteComment = async (id: Comment['id'], postId: Post['id']) => {
-    try {
-      await fetch(`/api/comments/${id}`, {
-        method: 'DELETE',
-      });
-      setComments((prev) => ({
-        ...prev,
-        [postId]: prev[postId].filter((comment) => comment.id !== id),
-      }));
-    } catch (error) {
-      console.error('댓글 삭제 오류:', error);
-    }
-  };
-
-  // 댓글 좋아요
-  const likeComment = async (id: Comment['id'], postId: Post['id']) => {
-    const postComments = comments[postId];
-    const comment = postComments?.find((c) => c.id === id);
-
-    if (!postComments || !comment) return;
-
-    try {
-      const response = await fetch(`/api/comments/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ likes: comment.likes + 1 }),
-      });
-      const data = await response.json();
-      setComments((prev) => ({
-        ...prev,
-        [postId]: prev[postId].map((comment) => (comment.id === data.id ? data : comment)),
-      }));
-    } catch (error) {
-      console.error('댓글 좋아요 오류:', error);
-    }
   };
 
   // 게시물 상세 보기
@@ -420,23 +95,11 @@ const Home = () => {
       setSelectedUser(userData);
       setShowUserModal(true);
     } catch (error) {
-      console.error('사용자 정보 가져오기 오류:', error);
+      console.error('사용 정보 가져오기 오류:', error);
     }
   };
 
-  useEffect(() => {
-    fetchTags();
-  }, []);
-
-  useEffect(() => {
-    if (selectedTag) {
-      fetchPostsByTag(selectedTag);
-    } else {
-      fetchPosts();
-    }
-    updateURL();
-  }, [skip, limit, sortBy, sortOrder, selectedTag]);
-
+  // URL 변경 시 상태 업데이트만 하는 useEffect
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     setSkip(parseInt(params.get('skip') || '0'));
@@ -444,8 +107,13 @@ const Home = () => {
     setSearchQuery(params.get('search') || '');
     setSortBy(params.get('sortBy') || '');
     setSortOrder(params.get('sortOrder') || 'asc');
-    setSelectedTag(params.get('tag') || '');
+    setSelectedTag(params.get('tag') || 'all');
   }, [location.search]);
+
+  // 필터 변경 시 URL만 업데이트하는 useEffect
+  useEffect(() => {
+    updateURL();
+  }, [skip, limit, sortBy, sortOrder, selectedTag]);
 
   // 게시물 테이블 렌더링
   const renderPostTable = () => (
@@ -470,23 +138,7 @@ const Home = () => {
                   highlight={searchQuery}
                 />
 
-                <div className="flex flex-wrap gap-1">
-                  {post.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className={`px-1 text-[9px] font-semibold rounded-[4px] cursor-pointer ${
-                        selectedTag === tag
-                          ? 'text-white bg-blue-500 hover:bg-blue-600'
-                          : 'text-blue-800 bg-blue-100 hover:bg-blue-200'
-                      }`}
-                      onClick={() => {
-                        setSelectedTag(tag);
-                      }}
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
+                <TagList post={post} />
               </div>
             </TableCell>
             <TableCell>
@@ -631,7 +283,7 @@ const Home = () => {
                   className="pl-8"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && searchPosts()}
+                  onKeyDown={(e) => e.key === 'Enter' && updateURL()}
                 />
               </div>
             </div>
@@ -639,7 +291,6 @@ const Home = () => {
               value={selectedTag}
               onValueChange={(value) => {
                 setSelectedTag(value);
-                fetchPostsByTag(value);
               }}
             >
               <SelectTrigger className="w-[180px]">
@@ -752,7 +403,7 @@ const Home = () => {
               value={newPost.userId}
               onChange={(e) => setNewPost({ ...newPost, userId: Number(e.target.value) })}
             />
-            <Button onClick={addPost}>게시물 추가</Button>
+            <Button onClick={() => addPost(newPost)}>게시물 추가</Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -778,7 +429,7 @@ const Home = () => {
               value={selectedPost?.body || ''}
               onChange={(e) => selectedPost && setSelectedPost({ ...selectedPost, body: e.target.value })}
             />
-            <Button onClick={updatePost}>게시물 업데이트</Button>
+            <Button onClick={() => selectedPost && updatePost(selectedPost)}>게시물 업데이트</Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -798,7 +449,7 @@ const Home = () => {
               value={newComment.body}
               onChange={(e) => setNewComment({ ...newComment, body: e.target.value })}
             />
-            <Button onClick={addComment}>댓글 추가</Button>
+            <Button onClick={() => addComment(newComment)}>댓글 추가</Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -818,7 +469,7 @@ const Home = () => {
               value={selectedComment?.body || ''}
               onChange={(e) => selectedComment && setSelectedComment({ ...selectedComment, body: e.target.value })}
             />
-            <Button onClick={updateComment}>댓글 업데이트</Button>
+            <Button onClick={() => selectedComment && updateComment(selectedComment)}>댓글 업데이트</Button>
           </div>
         </DialogContent>
       </Dialog>

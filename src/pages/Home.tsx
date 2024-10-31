@@ -481,7 +481,6 @@ const Home = () => {
                       }`}
                       onClick={() => {
                         setSelectedTag(tag);
-                        updateURL();
                       }}
                     >
                       {tag}
@@ -641,7 +640,6 @@ const Home = () => {
               onValueChange={(value) => {
                 setSelectedTag(value);
                 fetchPostsByTag(value);
-                updateURL();
               }}
             >
               <SelectTrigger className="w-[180px]">
@@ -654,7 +652,7 @@ const Home = () => {
                     key={tag.url}
                     value={tag.slug}
                   >
-                    {tag.slug}
+                    {tag.name}
                   </SelectItem>
                 ))}
               </SelectContent>

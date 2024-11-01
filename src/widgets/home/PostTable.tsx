@@ -1,7 +1,4 @@
 import { FC } from 'react';
-import { ThumbsUp, ThumbsDown, MessageSquare, Edit2, Trash2 } from 'lucide-react';
-
-import { Button } from '@shared/ui/Button';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@shared/ui/Table';
 
 import { useFetchPosts } from '@features/home/api/useFetchPost';
@@ -9,6 +6,7 @@ import { useFetchPosts } from '@features/home/api/useFetchPost';
 import PostTableTitle from '@features/home/ui/PostTableTitle';
 import PostTableAuthor from '@features/home/ui/PostTableAuthor';
 import PostTableReactions from '@entities/home/ui/PostTableReactions';
+import PostTableActions from '@/features/home/ui/PostTableActions';
 
 const PostTable: FC = () => {
   const { posts, loading } = useFetchPosts();
@@ -46,32 +44,7 @@ const PostTable: FC = () => {
             </TableCell>
             {/* 작업 */}
             <TableCell>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => openPostDetail(post)}
-                >
-                  <MessageSquare className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setSelectedPost(post);
-                    setShowEditDialog(true);
-                  }}
-                >
-                  <Edit2 className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => deletePost(post.id)}
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              </div>
+              <PostTableActions post={post} />
             </TableCell>
           </TableRow>
         ))}

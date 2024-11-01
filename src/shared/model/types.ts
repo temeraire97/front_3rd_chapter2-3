@@ -4,7 +4,7 @@ export type WithClassName<T extends ElementType> = PropsWithChildren<ComponentPr
   className?: string;
 };
 
-export interface Response {
+export interface ApiResponse {
   total: number;
   skip: number;
   limit: number;

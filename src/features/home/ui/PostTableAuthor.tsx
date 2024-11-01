@@ -7,17 +7,17 @@ import { useUser } from '@/features/home/model/useUser';
 
 const PostTableAuthor: FC<{ author: Post['author'] }> = ({ author }) => {
   const { fetchUser } = useFetchUser(author?.id ?? 0);
-  const { setIsUserDialogOpen } = useUser();
+  const { setIsPostUserDialogOpen } = useUser();
 
-  function handleOpenUserDialog() {
+  function handleOpenPostUserDialog() {
     fetchUser();
-    setIsUserDialogOpen(true);
+    setIsPostUserDialogOpen(true);
   }
 
   return (
     <div
       className="flex items-center space-x-2 cursor-pointer"
-      onClick={handleOpenUserDialog}
+      onClick={handleOpenPostUserDialog}
     >
       <img
         src={author?.image}

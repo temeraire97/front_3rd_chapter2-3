@@ -1,5 +1,3 @@
-import type { Response } from '@/shared/model/types';
-
 interface Hair {
   color: string;
   type: string;
@@ -77,10 +75,6 @@ export interface User {
   role: string;
 }
 
-export interface UserResponse extends Response {
-  users: User[];
-}
-
 export interface NewPost {
   title: string;
   body: string;
@@ -95,10 +89,6 @@ export interface Post extends NewPost {
   author?: User;
 }
 
-export interface PostsResponse extends Response {
-  posts: Post[];
-}
-
 export interface NewCommnet {
   body: string;
   postId: Post['id'] | null;
@@ -109,10 +99,6 @@ export interface Comment extends NewCommnet {
   id: number;
   likes: number;
   user: User;
-}
-
-export interface Comments {
-  [postId: Post['id']]: Comment[];
 }
 
 export interface Tag {

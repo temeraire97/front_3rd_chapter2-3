@@ -1,11 +1,11 @@
 import { useAtom, useAtomValue } from 'jotai';
 
 import { User } from '@/entities/home/model/types';
-import { isUserDialogOpenAtom, userAtom } from '@entities/home/model/userAtoms';
+import { isPostUserDialogOpenAtom, userAtom } from '@entities/home/model/userAtoms';
 
 export const useUser = () => {
   const user = useAtomValue<User | null>(userAtom);
-  const [isUserDialogOpen, setIsUserDialogOpen] = useAtom<boolean>(isUserDialogOpenAtom);
+  const [isPostUserDialogOpen, setIsPostUserDialogOpen] = useAtom<boolean>(isPostUserDialogOpenAtom);
 
-  return { user, isUserDialogOpen, setIsUserDialogOpen };
+  return { user, isPostUserDialogOpen, setIsPostUserDialogOpen };
 };

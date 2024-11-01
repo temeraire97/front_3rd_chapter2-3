@@ -2,13 +2,14 @@ import { useEffect } from 'react';
 import { useSetAtom } from 'jotai';
 import { useQuery } from '@tanstack/react-query';
 
-import { UserResponse, User } from '@/entities/home/model/types';
+import type { ApiResponse } from '@shared/model/types';
+import type { User } from '@/entities/home/model/types';
 import { fetchUserById, fetchUserList } from '@/entities/home/api/userApi';
 
 import { userAtom } from '@entities/home/model/userAtoms';
 
 export const useFetchUsers = () => {
-  const { data } = useQuery<UserResponse, Error>({
+  const { data } = useQuery<ApiResponse & { users: User[] }, Error>({
     queryKey: ['users'],
     queryFn: fetchUserList,
     staleTime: 5 * 60 * 1000, // 5 minutes

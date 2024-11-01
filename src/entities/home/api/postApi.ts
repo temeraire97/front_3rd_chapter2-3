@@ -1,5 +1,6 @@
 // features/post/api/postApi.ts
-import type { NewPost, Post, PostsResponse } from '@/entities/home/model/types';
+import type { ApiResponse } from '@shared/model/types';
+import type { NewPost, Post } from '@/entities/home/model/types';
 
 type PostQueryParams = {
   tag?: string;
@@ -18,19 +19,25 @@ const createPostQueryString = (params: Omit<PostQueryParams, 'tag' | 'search'>) 
   return `${baseQuery}${sortQuery}${orderQuery}`;
 };
 
-export const fetchPostList = async (params: Omit<PostQueryParams, 'tag' | 'search'>): Promise<PostsResponse> => {
-  const response: Response = await fetch(`/api/posts${createPostQueryString(params)}`);
+export const fetchPostList = async (
+  params: Omit<PostQueryParams, 'tag' | 'search'>,
+): Promise<ApiResponse & { posts: Post[] }> => {
+  const response = await fetch(`/api/posts${createPostQueryString(params)}`);
   const data = await response.json();
   return data;
 };
 
-export const fetchPostListByTag = async (params: Omit<PostQueryParams, 'search'>): Promise<PostsResponse> => {
+export const fetchPostListByTag = async (
+  params: Omit<PostQueryParams, 'search'>,
+): Promise<ApiResponse & { posts: Post[] }> => {
   const response = await fetch(`/api/posts/tag/${params.tag}${createPostQueryString(params)}`);
   const data = await response.json();
   return data;
 };
 
-export const fetchPostListBySearch = async (params: Omit<PostQueryParams, 'tag'>): Promise<PostsResponse> => {
+export const fetchPostListBySearch = async (
+  params: Omit<PostQueryParams, 'tag'>,
+): Promise<ApiResponse & { posts: Post[] }> => {
   const response = await fetch(
     `/api/posts/search?q=${params.search}${createPostQueryString(params).replace('?', '&')}`,
   );

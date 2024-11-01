@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { http, HttpResponse } from 'msw';
+import { http, HttpApiResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { MemoryRouter } from 'react-router-dom';
 import Home from '../src/pages/Home';
@@ -12,19 +12,19 @@ import { TEST_POSTS, TEST_SEARCH_POST, TEST_USERS } from './mockData';
 // MSW 서버 설정
 const server = setupServer(
   http.get('/api/posts', () => {
-    return HttpResponse.json(TEST_POSTS);
+    return HttpApiResponse.json(TEST_POSTS);
   }),
 
   http.get('/api/posts/search?q=His%20mother%20had%20always%20taught%20him', () => {
-    return HttpResponse.json(TEST_SEARCH_POST);
+    return HttpApiResponse.json(TEST_SEARCH_POST);
   }),
 
   http.get('/api/users', () => {
-    return HttpResponse.json(TEST_USERS);
+    return HttpApiResponse.json(TEST_USERS);
   }),
 
   http.get('/api/posts/tags', () => {
-    return HttpResponse.json([
+    return HttpApiResponse.json([
       'history',
       'american',
       'crime',
@@ -97,7 +97,7 @@ describe('Home', () => {
           title: NEW_POST.title,
           body: NEW_POST.body,
         });
-        return HttpResponse.json(NEW_POST);
+        return HttpApiResponse.json(NEW_POST);
       }),
     );
 

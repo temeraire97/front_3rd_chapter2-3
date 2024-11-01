@@ -3,13 +3,29 @@ import { Button } from '@shared/ui/Button';
 import { MessageSquare, Edit2, Trash2 } from 'lucide-react';
 
 import type { Post } from '@/entities/home/model/types';
+import { usePost } from '@/features/home/model/usePost';
+import useComment from '@/features/home/model/useComment';
+
+// 게시물 상세 보기
+// const openPostDetail = (post: Post) => {
+//   setSelectedPost(post);
+//   fetchComments(post.id);
+//   setShowPostDetailDialog(true);
+// };
 
 const PostDetailDialogOpenButton: FC<{ post: Post }> = ({ post }) => {
+  const { setSelectedPost, setIsPostDetailDialogOpen } = usePost();
+
+  function handlePostDetailDialogOpen() {
+    setSelectedPost(post);
+    setIsPostDetailDialogOpen(true);
+  }
+
   return (
     <Button
       variant="ghost"
       size="sm"
-      onClick={() => openPostDetail(post)}
+      onClick={handlePostDetailDialogOpen}
     >
       <MessageSquare className="w-4 h-4" />
     </Button>

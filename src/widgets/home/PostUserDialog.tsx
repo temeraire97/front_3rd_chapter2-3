@@ -5,13 +5,13 @@ import { useUser } from '@/features/home/model/useUser';
 
 import UserDetail from '@/entities/home/ui/UserDetail';
 
-const UserDialog: FC = () => {
-  const { isUserDialogOpen, setIsUserDialogOpen, user } = useUser();
+const PostUserDialog: FC = () => {
+  const { user, isPostUserDialogOpen, setIsPostUserDialogOpen } = useUser();
 
   return (
     <Dialog
-      open={isUserDialogOpen}
-      onOpenChange={setIsUserDialogOpen}
+      open={isPostUserDialogOpen}
+      onOpenChange={setIsPostUserDialogOpen}
     >
       <DialogContent>
         <DialogHeader>
@@ -24,5 +24,5 @@ const UserDialog: FC = () => {
   );
 };
 
-UserDialog.displayName = 'UserDialog';
-export default UserDialog;
+PostUserDialog.displayName = 'PostUserDialog';
+export default PostUserDialog;

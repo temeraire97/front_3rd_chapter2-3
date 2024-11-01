@@ -1,4 +1,5 @@
-import type { PostsResponse } from '@entities/home/model/types';
+import type { ApiResponse } from '@shared/model/types';
+import type { Post } from '@entities/home/model/types';
 import { fetchPostList, fetchPostListByTag, fetchPostListBySearch } from '@entities/home/api/postApi';
 import { API_CALLS, type ApiCallType } from '@entities/home/lib/constants';
 
@@ -31,7 +32,7 @@ export const createApiMap = (params?: PostParams) => {
       return fetchPostListByTag({ ...defaultParams, tag: params.tag });
     },
     [API_CALLS.default]: () => fetchPostList(defaultParams),
-  } as Record<ApiCallType, () => Promise<PostsResponse>>;
+  } as Record<ApiCallType, () => Promise<ApiResponse & { posts: Post[] }>>;
 };
 
 export const getApiCallType = (params?: PostParams): ApiCallType => {
@@ -40,7 +41,7 @@ export const getApiCallType = (params?: PostParams): ApiCallType => {
   return API_CALLS.default;
 };
 
-export const fetchPostApi = (params?: PostParams): Promise<PostsResponse> => {
+export const fetchPostApi = (params?: PostParams): Promise<ApiResponse & { posts: Post[] }> => {
   const apiMap = createApiMap(params);
   const apiCallType = getApiCallType(params);
   return apiMap[apiCallType]();

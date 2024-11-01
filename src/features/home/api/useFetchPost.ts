@@ -1,13 +1,15 @@
 import { useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient, type QueryClient } from '@tanstack/react-query';
 
+import type { ApiResponse } from '@shared/model/types';
+import type { Post } from '@/entities/home/model/types';
+
 import { enrichPostsWithUsers } from '@entities/home/lib/userUtils';
 import { useFetchUsers } from '@/features/home/api/useFetchUser';
 import { usePostFilter } from '@features/home/model/usePostFilter';
 
 import { fetchPostApi } from '@entities/home/lib/postUtils';
 import { createPost, updatePostById, deletePostById } from '@entities/home/api/postApi';
-import { PostsResponse } from '@/entities/home/model/types';
 
 export const useFetchPosts = () => {
   const { users } = useFetchUsers();
@@ -26,16 +28,16 @@ export const useFetchPosts = () => {
     [filters],
   );
 
-  const { data: postsResponse, isPending: loading } = useQuery<PostsResponse>({
+  const { data: postsApiResponse, isPending: loading } = useQuery<ApiResponse & { posts: Post[] }, Error>({
     queryKey: ['posts', queryParams],
     queryFn: () => fetchPostApi(queryParams),
   });
 
   const posts = useMemo(
-    () => (postsResponse?.posts ? enrichPostsWithUsers(postsResponse.posts, users) : []),
-    [postsResponse?.posts, users],
+    () => (postsApiResponse?.posts ? enrichPostsWithUsers(postsApiResponse.posts, users) : []),
+    [postsApiResponse?.posts, users],
   );
-  const total = useMemo(() => postsResponse?.total ?? 0, [postsResponse?.total]);
+  const total = useMemo(() => postsApiResponse?.total ?? 0, [postsApiResponse?.total]);
 
   return {
     posts,

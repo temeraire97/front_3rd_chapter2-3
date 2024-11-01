@@ -1,50 +1,38 @@
 import { useAtom } from 'jotai';
 import { useState } from 'react';
-import { Edit2, Plus, Search, ThumbsUp, Trash2 } from 'lucide-react';
-import { Button } from '@/shared/ui/Button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/Card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/ui/Dialog';
-import { Input } from '@/shared/ui/Input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/Select';
-import { Textarea } from '@/shared/ui/Textarea';
-import HighlightText from '@/shared/ui/Highlight';
+import { Plus, Search } from 'lucide-react';
 
-import type { Post } from '@/entities/home/model/types';
+import { Button } from '@shared/ui/Button';
+import { Card, CardContent, CardHeader, CardTitle } from '@shared/ui/Card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@shared/ui/Dialog';
+import { Input } from '@shared/ui/Input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@shared/ui/Select';
+import { Textarea } from '@shared/ui/Textarea';
 
-import useTag from '@/features/home/model/useTag';
-import { useFetchPosts, useAddPost, useUpdatePost, useDeletePost } from '@/features/home/api/useFetchPost';
-import useComment from '@/features/home/model/useComment';
+import { useFetchPosts, useAddPost, useUpdatePost, useDeletePost } from '@features/home/api/useFetchPost';
 
-import { selectedPost as selectedPostAtom, newPost as newPostAtom } from '@entities/home/model/postAtoms';
-import { usePostFilter } from '@/features/home/model/usePostFilter';
+import { usePost } from '@features/home/model/usePost';
+import { newPostAtom } from '@entities/home/model/postAtoms';
+import { usePostFilter } from '@features/home/model/usePostFilter';
+import useTag from '@features/home/model/useTag';
 
-import PostTable from '@/widgets/home/PostTable';
-
-import UserDialog from '@/features/home/ui/UserDialog';
+import PostTable from '@widgets/home/PostTable';
+import PostUserDialog from '@widgets/home/PostUserDialog';
+import PostDetailDialog from '@widgets/home/PostDetailDialog';
 
 const Home = () => {
-  const {
-    comments,
-    selectedComment,
-    newComment,
-    setSelectedComment,
-    setNewComment,
-    fetchComments,
-    addComment,
-    updateComment,
-    deleteComment,
-    likeComment,
-  } = useComment();
-
   const { tags } = useTag();
-  const [selectedPost, setSelectedPost] = useAtom(selectedPostAtom);
+
+  const { selectedPost, setSelectedPost } = usePost();
   const [newPost, setNewPost] = useAtom(newPostAtom);
+
+  const [newComment, setNewComment] = useState<Comment>({} as Comment);
+  const [selectedComment, setSelectedComment] = useState<Comment>({} as Comment);
 
   const [showAddDialog, setShowAddDialog] = useState<boolean>(false);
   const [showEditDialog, setShowEditDialog] = useState<boolean>(false);
   const [showAddCommentDialog, setShowAddCommentDialog] = useState<boolean>(false);
   const [showEditCommentDialog, setShowEditCommentDialog] = useState<boolean>(false);
-  const [showPostDetailDialog, setShowPostDetailDialog] = useState<boolean>(false);
 
   const {
     filters: { search, tag, page, pageSize, sortBy, sortOrder },
@@ -61,77 +49,6 @@ const Home = () => {
   const { mutate: addPost } = useAddPost();
   const { mutate: updatePost } = useUpdatePost();
   const { mutate: deletePost } = useDeletePost();
-
-  // 게시물 상세 보기
-  const openPostDetail = (post: Post) => {
-    setSelectedPost(post);
-    fetchComments(post.id);
-    setShowPostDetailDialog(true);
-  };
-
-  // 댓글 렌더링
-  const renderComments = (postId: number) => (
-    <div className="mt-2">
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-semibold">댓글</h3>
-        <Button
-          size="sm"
-          onClick={() => {
-            setNewComment((prev) => ({ ...prev, postId }));
-            setShowAddCommentDialog(true);
-          }}
-        >
-          <Plus className="w-3 h-3 mr-1" />
-          댓글 추가
-        </Button>
-      </div>
-      <div className="space-y-1">
-        {comments[postId]?.map((comment) => (
-          <div
-            key={comment.id}
-            className="flex items-center justify-between text-sm border-b pb-1"
-          >
-            <div className="flex items-center space-x-2 overflow-hidden">
-              <span className="font-medium truncate">{comment.user.username}:</span>
-              <span className="truncate">
-                <HighlightText
-                  text={comment.body}
-                  highlight={search}
-                />
-              </span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => likeComment(comment.id, postId)}
-              >
-                <ThumbsUp className="w-3 h-3" />
-                <span className="ml-1 text-xs">{comment.likes}</span>
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setSelectedComment(comment);
-                  setShowEditCommentDialog(true);
-                }}
-              >
-                <Edit2 className="w-3 h-3" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => deleteComment(comment.id, postId)}
-              >
-                <Trash2 className="w-3 h-3" />
-              </Button>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
 
   return (
     <Card className="w-full max-w-6xl mx-auto">
@@ -348,33 +265,10 @@ const Home = () => {
       </Dialog>
 
       {/* 게시물 상세 보기 대화상자 */}
-      <Dialog
-        open={showPostDetailDialog}
-        onOpenChange={setShowPostDetailDialog}
-      >
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>
-              <HighlightText
-                text={selectedPost?.title}
-                highlight={search}
-              />
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <p>
-              <HighlightText
-                text={selectedPost?.body}
-                highlight={search}
-              />
-            </p>
-            {selectedPost && renderComments(selectedPost?.id)}
-          </div>
-        </DialogContent>
-      </Dialog>
+      <PostDetailDialog />
 
       {/* 사용자 모달 */}
-      <UserDialog />
+      <PostUserDialog />
     </Card>
   );
 };

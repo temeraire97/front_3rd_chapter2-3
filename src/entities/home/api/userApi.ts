@@ -1,6 +1,7 @@
-import type { User, UserResponse } from '@/entities/home/model/types';
+import type { ApiResponse } from '@shared/model/types';
+import type { User } from '@/entities/home/model/types';
 
-export const fetchUserList = async (): Promise<UserResponse> => {
+export const fetchUserList = async (): Promise<ApiResponse & { users: User[] }> => {
   const response = await fetch('/api/users?limit=0&select=username,image');
   const data = await response.json();
   return data;

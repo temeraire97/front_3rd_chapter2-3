@@ -1,21 +1,22 @@
 import { FC } from 'react';
 
 import { Post } from '@entities/home/model/types';
-
-// import useTag from '@/features/home/model/useTag';
-
+import { usePostFilter } from '@/features/home/model/usePostFilter';
 const TableTag: FC<{ tag: string }> = ({ tag }) => {
-  // const isSelectedClass =
-  //   selectedTag === tag ? 'text-white bg-blue-500 hover:bg-blue-600' : 'text-blue-800 bg-blue-100 hover:bg-blue-200';
+  const {
+    filters: { tag: selectedTag },
+    setTag: setSelectedTag,
+  } = usePostFilter();
 
-  const isSelectedClass = '';
+  const isSelectedClass =
+    selectedTag === tag ? 'text-white bg-blue-500 hover:bg-blue-600' : 'text-blue-800 bg-blue-100 hover:bg-blue-200';
 
   return (
     <span
       key={tag}
       className={`px-1 text-[9px] font-semibold rounded-[4px] cursor-pointer ${isSelectedClass}`}
       onClick={() => {
-        // setSelectedTag(tag);
+        setSelectedTag(tag);
       }}
     >
       {tag}

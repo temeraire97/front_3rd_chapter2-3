@@ -1,6 +1,7 @@
+// features/post/api/postApi.ts
 import type { NewPost, Post, PostsResponse } from '@/entities/home/model/types';
 
-type Params = {
+type PostQueryParams = {
   tag?: string;
   search?: string;
   limit: number;
@@ -9,7 +10,7 @@ type Params = {
   sortOrder?: string;
 };
 
-const buildQueryString = (params: Omit<Params, 'tag' | 'search'>) => {
+const createPostQueryString = (params: Omit<PostQueryParams, 'tag' | 'search'>) => {
   const baseQuery = `?limit=${params.limit}&skip=${params.skip}`;
   const sortQuery = params.sortBy ? `&sortBy=${params.sortBy}` : '';
   const orderQuery = params.sortOrder ? `&order=${params.sortOrder}` : '';
@@ -17,44 +18,49 @@ const buildQueryString = (params: Omit<Params, 'tag' | 'search'>) => {
   return `${baseQuery}${sortQuery}${orderQuery}`;
 };
 
-export const getPosts = async (params: Omit<Params, 'tag' | 'search'>): Promise<PostsResponse> => {
-  const response = await fetch(`/api/posts${buildQueryString(params)}`);
+export const fetchPostList = async (params: Omit<PostQueryParams, 'tag' | 'search'>): Promise<PostsResponse> => {
+  const response: Response = await fetch(`/api/posts${createPostQueryString(params)}`);
   const data = await response.json();
   return data;
 };
 
-export const getPostsByTag = async (params: Omit<Params, 'search'>): Promise<PostsResponse> => {
-  const response = await fetch(`/api/posts/tag/${params.tag}${buildQueryString(params)}`);
+export const fetchPostListByTag = async (params: Omit<PostQueryParams, 'search'>): Promise<PostsResponse> => {
+  const response = await fetch(`/api/posts/tag/${params.tag}${createPostQueryString(params)}`);
   const data = await response.json();
   return data;
 };
 
-export const getPostsBySearch = async (params: Omit<Params, 'tag'>): Promise<PostsResponse> => {
-  const response = await fetch(`/api/posts/search?q=${params.search}${buildQueryString(params).replace('?', '&')}`);
+export const fetchPostListBySearch = async (params: Omit<PostQueryParams, 'tag'>): Promise<PostsResponse> => {
+  const response = await fetch(
+    `/api/posts/search?q=${params.search}${createPostQueryString(params).replace('?', '&')}`,
+  );
   const data = await response.json();
   return data;
 };
 
-export const addPost = async (post: NewPost): Promise<NewPost & { id: number }> => {
+const createPostRequestConfig = (post: Post | NewPost) => ({
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(post),
+});
+
+export const createPost = async (post: NewPost): Promise<NewPost & { id: number }> => {
   const response = await fetch('/api/posts/add', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(post),
+    ...createPostRequestConfig(post),
   });
   return response.json();
 };
 
-export const updatePost = async (post: Post): Promise<Omit<Post, 'author' | 'views'>> => {
+export const updatePostById = async (post: Post): Promise<Omit<Post, 'author' | 'views'>> => {
   const response = await fetch(`/api/posts/${post.id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(post),
+    ...createPostRequestConfig(post),
   });
   return response.json();
 };
 
-export const deletePost = async (id: number): Promise<void> => {
-  await fetch(`/api/posts/${id}`, {
+export const deletePostById = async (postId: number): Promise<void> => {
+  await fetch(`/api/posts/${postId}`, {
     method: 'DELETE',
   });
 };

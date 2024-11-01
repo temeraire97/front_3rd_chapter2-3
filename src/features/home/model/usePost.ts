@@ -1,60 +1,76 @@
 import { useMemo } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, type QueryClient } from '@tanstack/react-query';
 
 import { enrichPostsWithUsers } from '@entities/home/lib/userUtils';
 import useUser from '@features/home/model/useUser';
+import { usePostFilter } from './usePostFilter';
 
-import { fetchPosts, type PostParams } from '@entities/home/lib/postUtils';
-import {
-  addPost as addPostApi,
-  updatePost as updatePostApi,
-  deletePost as deletePostApi,
-} from '@entities/home/api/postApi';
+import { fetchPostApi } from '@entities/home/lib/postUtils';
+import { createPost, updatePostById, deletePostById } from '@entities/home/api/postApi';
+import { PostsResponse } from '@/entities/home/model/types';
 
-const usePost = (params?: PostParams) => {
-  const queryClient = useQueryClient();
+export const usePost = () => {
   const { users } = useUser();
+  const { filters } = usePostFilter();
 
-  const { data: postsResponse, isPending: loading } = useQuery({
-    queryKey: ['posts', params],
-    queryFn: () => fetchPosts(params),
-    enabled: true,
+  // URL 필터를 API 파라미터로 변환
+  const queryParams = useMemo(
+    () => ({
+      search: filters.search,
+      tag: filters.tag === 'all' ? undefined : filters.tag,
+      skip: (filters.page - 1) * filters.pageSize,
+      limit: filters.pageSize,
+      sortBy: filters.sortBy || undefined,
+      sortOrder: filters.sortOrder,
+    }),
+    [filters],
+  );
+
+  const { data: postsResponse, isPending: loading } = useQuery<PostsResponse>({
+    queryKey: ['posts', queryParams],
+    queryFn: () => fetchPostApi(queryParams),
   });
 
-  const { mutateAsync: addPost } = useMutation({
-    mutationFn: addPostApi,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['posts'] });
-    },
-  });
-
-  const { mutateAsync: updatePost } = useMutation({
-    mutationFn: updatePostApi,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['posts'] });
-    },
-  });
-
-  const { mutateAsync: deletePost } = useMutation({
-    mutationFn: deletePostApi,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['posts'] });
-    },
-  });
-
-  const posts = useMemo(() => {
-    return postsResponse?.posts ? enrichPostsWithUsers(postsResponse.posts, users) : [];
-  }, [postsResponse?.posts, users]);
+  const posts = useMemo(
+    () => (postsResponse?.posts ? enrichPostsWithUsers(postsResponse.posts, users) : []),
+    [postsResponse?.posts, users],
+  );
   const total = useMemo(() => postsResponse?.total ?? 0, [postsResponse?.total]);
 
   return {
     posts,
-    total,
     loading,
-    addPost,
-    updatePost,
-    deletePost,
+    pageCount: Math.ceil(total / filters.pageSize),
   };
 };
 
-export default usePost;
+const invalidatePosts = (queryClient: QueryClient) => {
+  queryClient.invalidateQueries({ queryKey: ['posts'] });
+};
+
+export const useAddPostMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: createPost,
+    onSuccess: () => invalidatePosts(queryClient),
+  });
+};
+
+export const useUpdatePostMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updatePostById,
+    onSuccess: () => invalidatePosts(queryClient),
+  });
+};
+
+export const useDeletePostMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deletePostById,
+    onSuccess: () => invalidatePosts(queryClient),
+  });
+};

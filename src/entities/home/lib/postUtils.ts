@@ -1,6 +1,6 @@
 import type { PostsResponse } from '@entities/home/model/types';
-import { API_CALLS, type ApiCallType } from './constants';
-import { getPosts, getPostsByTag, getPostsBySearch } from '@entities/home/api/postApi';
+import { fetchPostList, fetchPostListByTag, fetchPostListBySearch } from '@entities/home/api/postApi';
+import { API_CALLS, type ApiCallType } from '@entities/home/lib/constants';
 
 export type PostParams = {
   limit?: number;
@@ -24,13 +24,13 @@ export const createApiMap = (params?: PostParams) => {
   return {
     [API_CALLS.search]: () => {
       if (!params?.search) throw new Error('Search parameter is required');
-      return getPostsBySearch({ ...defaultParams, search: params.search });
+      return fetchPostListBySearch({ ...defaultParams, search: params.search });
     },
     [API_CALLS.tag]: () => {
       if (!params?.tag) throw new Error('Tag parameter is required');
-      return getPostsByTag({ ...defaultParams, tag: params.tag });
+      return fetchPostListByTag({ ...defaultParams, tag: params.tag });
     },
-    [API_CALLS.default]: () => getPosts(defaultParams),
+    [API_CALLS.default]: () => fetchPostList(defaultParams),
   } as Record<ApiCallType, () => Promise<PostsResponse>>;
 };
 
@@ -40,7 +40,7 @@ export const getApiCallType = (params?: PostParams): ApiCallType => {
   return API_CALLS.default;
 };
 
-export const fetchPosts = async (params?: PostParams): Promise<PostsResponse> => {
+export const fetchPostApi = (params?: PostParams): Promise<PostsResponse> => {
   const apiMap = createApiMap(params);
   const apiCallType = getApiCallType(params);
   return apiMap[apiCallType]();

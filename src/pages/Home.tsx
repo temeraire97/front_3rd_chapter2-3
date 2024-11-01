@@ -1,7 +1,6 @@
 import { useAtom } from 'jotai';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Edit2, MessageSquare, Plus, Search, ThumbsDown, ThumbsUp, Trash2 } from 'lucide-react';
-import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/shared/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/Card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/ui/Dialog';
@@ -14,18 +13,20 @@ import HighlightText from '@/shared/ui/Highlight';
 import type { Post, User } from '@/entities/home/model/types';
 
 import useTag from '@/features/home/model/useTag';
-import usePost from '@/features/home/model/usePost';
+import {
+  usePost,
+  useAddPostMutation,
+  useUpdatePostMutation,
+  useDeletePostMutation,
+} from '@/features/home/model/usePost';
 import useComment from '@/features/home/model/useComment';
 
 import TagList from '@/features/home/ui/TagList';
 
 import { selectedPost as selectedPostAtom, newPost as newPostAtom } from '@entities/home/model/postAtoms';
+import { usePostFilter } from '@/features/home/model/usePostFilter';
 
 const Home = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const queryParams = new URLSearchParams(location.search);
-
   const {
     comments,
     selectedComment,
@@ -52,33 +53,21 @@ const Home = () => {
   const [showUserModal, setShowUserModal] = useState<boolean>(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
-  const [skip, setSkip] = useState<number>(parseInt(queryParams.get('skip') || '0'));
-  const [limit, setLimit] = useState<number>(parseInt(queryParams.get('limit') || '10'));
-  const [searchQuery, setSearchQuery] = useState<string>(queryParams.get('search') || '');
-  const [sortBy, setSortBy] = useState<string>(queryParams.get('sortBy') || '');
-  const [sortOrder, setSortOrder] = useState<string>(queryParams.get('sortOrder') || 'asc');
-  const [selectedTag, setSelectedTag] = useState<string>(queryParams.get('tag') || 'all');
+  const {
+    filters: { search, tag, page, pageSize, sortBy, sortOrder },
+    setSearch,
+    setTag,
+    setPage,
+    setPageSize,
+    setSortBy,
+    setSortOrder,
+    setSorting,
+  } = usePostFilter();
+  const { posts, loading, pageCount } = usePost();
 
-  const { posts, total, loading, addPost, updatePost, deletePost } = usePost({
-    skip: skip,
-    limit: limit,
-    search: searchQuery,
-    sortBy: sortBy,
-    sortOrder: sortOrder,
-    tag: selectedTag,
-  });
-
-  // URL 업데이트 함수
-  const updateURL = () => {
-    const params = new URLSearchParams();
-    if (skip) params.set('skip', skip.toString());
-    if (limit) params.set('limit', limit.toString());
-    if (searchQuery) params.set('search', searchQuery);
-    if (sortBy) params.set('sortBy', sortBy);
-    if (sortOrder) params.set('sortOrder', sortOrder);
-    if (selectedTag) params.set('tag', selectedTag);
-    navigate(`?${params.toString()}`);
-  };
+  const { mutate: addPost } = useAddPostMutation();
+  const { mutate: updatePost } = useUpdatePostMutation();
+  const { mutate: deletePost } = useDeletePostMutation();
 
   // 게시물 상세 보기
   const openPostDetail = (post: Post) => {
@@ -98,22 +87,6 @@ const Home = () => {
       console.error('사용 정보 가져오기 오류:', error);
     }
   };
-
-  // URL 변경 시 상태 업데이트만 하는 useEffect
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    setSkip(parseInt(params.get('skip') || '0'));
-    setLimit(parseInt(params.get('limit') || '10'));
-    setSearchQuery(params.get('search') || '');
-    setSortBy(params.get('sortBy') || '');
-    setSortOrder(params.get('sortOrder') || 'asc');
-    setSelectedTag(params.get('tag') || 'all');
-  }, [location.search]);
-
-  // 필터 변경 시 URL만 업데이트하는 useEffect
-  useEffect(() => {
-    updateURL();
-  }, [skip, limit, sortBy, sortOrder, selectedTag]);
 
   // 게시물 테이블 렌더링
   const renderPostTable = () => (
@@ -135,7 +108,7 @@ const Home = () => {
               <div className="space-y-1">
                 <HighlightText
                   text={post.title}
-                  highlight={searchQuery}
+                  highlight={search}
                 />
 
                 <TagList post={post} />
@@ -223,7 +196,7 @@ const Home = () => {
               <span className="truncate">
                 <HighlightText
                   text={comment.body}
-                  highlight={searchQuery}
+                  highlight={search}
                 />
               </span>
             </div>
@@ -281,16 +254,16 @@ const Home = () => {
                 <Input
                   placeholder="게시물 검색..."
                   className="pl-8"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && updateURL()}
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && setSorting(sortBy, sortOrder)}
                 />
               </div>
             </div>
             <Select
-              value={selectedTag}
+              value={tag}
               onValueChange={(value) => {
-                setSelectedTag(value);
+                setTag(value);
               }}
             >
               <SelectTrigger className="w-[180px]">
@@ -310,7 +283,7 @@ const Home = () => {
             </Select>
             <Select
               value={sortBy}
-              onValueChange={setSortBy}
+              onValueChange={(value) => setSortBy(value)}
             >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="정렬 기준" />
@@ -324,7 +297,7 @@ const Home = () => {
             </Select>
             <Select
               value={sortOrder}
-              onValueChange={setSortOrder}
+              onValueChange={(value) => setSortOrder(value as 'asc' | 'desc')}
             >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="정렬 순서" />
@@ -344,8 +317,8 @@ const Home = () => {
             <div className="flex items-center gap-2">
               <span>표시</span>
               <Select
-                value={limit.toString()}
-                onValueChange={(value) => setLimit(Number(value))}
+                value={pageSize.toString()}
+                onValueChange={(value) => setPageSize(Number(value))}
               >
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="10" />
@@ -360,14 +333,14 @@ const Home = () => {
             </div>
             <div className="flex gap-2">
               <Button
-                disabled={skip === 0}
-                onClick={() => setSkip(Math.max(0, skip - limit))}
+                disabled={page === 1}
+                onClick={() => setPage(page - 1)}
               >
                 이전
               </Button>
               <Button
-                disabled={skip + limit >= total}
-                onClick={() => setSkip(skip + limit)}
+                disabled={page >= pageCount}
+                onClick={() => setPage(page + 1)}
               >
                 다음
               </Button>
@@ -484,7 +457,7 @@ const Home = () => {
             <DialogTitle>
               <HighlightText
                 text={selectedPost?.title}
-                highlight={searchQuery}
+                highlight={search}
               />
             </DialogTitle>
           </DialogHeader>
@@ -492,7 +465,7 @@ const Home = () => {
             <p>
               <HighlightText
                 text={selectedPost?.body}
-                highlight={searchQuery}
+                highlight={search}
               />
             </p>
             {selectedPost && renderComments(selectedPost?.id)}

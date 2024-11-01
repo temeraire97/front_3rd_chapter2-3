@@ -1,30 +1,26 @@
 import { useAtom } from 'jotai';
 import { useState } from 'react';
-import { Edit2, MessageSquare, Plus, Search, ThumbsDown, ThumbsUp, Trash2 } from 'lucide-react';
+import { Edit2, Plus, Search, ThumbsUp, Trash2 } from 'lucide-react';
 import { Button } from '@/shared/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/Card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/ui/Dialog';
 import { Input } from '@/shared/ui/Input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/Select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/Table';
 import { Textarea } from '@/shared/ui/Textarea';
 import HighlightText from '@/shared/ui/Highlight';
 
-import type { Post, User } from '@/entities/home/model/types';
+import type { Post } from '@/entities/home/model/types';
 
 import useTag from '@/features/home/model/useTag';
-import {
-  usePost,
-  useAddPostMutation,
-  useUpdatePostMutation,
-  useDeletePostMutation,
-} from '@/features/home/model/usePost';
+import { useFetchPosts, useAddPost, useUpdatePost, useDeletePost } from '@/features/home/api/useFetchPost';
 import useComment from '@/features/home/model/useComment';
-
-import TagList from '@/features/home/ui/TagList';
 
 import { selectedPost as selectedPostAtom, newPost as newPostAtom } from '@entities/home/model/postAtoms';
 import { usePostFilter } from '@/features/home/model/usePostFilter';
+
+import PostTable from '@/widgets/home/PostTable';
+
+import UserDialog from '@/features/home/ui/UserDialog';
 
 const Home = () => {
   const {
@@ -50,9 +46,6 @@ const Home = () => {
   const [showEditCommentDialog, setShowEditCommentDialog] = useState<boolean>(false);
   const [showPostDetailDialog, setShowPostDetailDialog] = useState<boolean>(false);
 
-  const [showUserModal, setShowUserModal] = useState<boolean>(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-
   const {
     filters: { search, tag, page, pageSize, sortBy, sortOrder },
     setSearch,
@@ -63,11 +56,11 @@ const Home = () => {
     setSortOrder,
     setSorting,
   } = usePostFilter();
-  const { posts, loading, pageCount } = usePost();
+  const { pageCount } = useFetchPosts();
 
-  const { mutate: addPost } = useAddPostMutation();
-  const { mutate: updatePost } = useUpdatePostMutation();
-  const { mutate: deletePost } = useDeletePostMutation();
+  const { mutate: addPost } = useAddPost();
+  const { mutate: updatePost } = useUpdatePost();
+  const { mutate: deletePost } = useDeletePost();
 
   // 게시물 상세 보기
   const openPostDetail = (post: Post) => {
@@ -75,99 +68,6 @@ const Home = () => {
     fetchComments(post.id);
     setShowPostDetailDialog(true);
   };
-
-  // 사용자 모달 열기
-  const openUserModal = async (user: User) => {
-    try {
-      const response = await fetch(`/api/users/${user.id}`);
-      const userData = await response.json();
-      setSelectedUser(userData);
-      setShowUserModal(true);
-    } catch (error) {
-      console.error('사용 정보 가져오기 오류:', error);
-    }
-  };
-
-  // 게시물 테이블 렌더링
-  const renderPostTable = () => (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-[50px]">ID</TableHead>
-          <TableHead>제목</TableHead>
-          <TableHead className="w-[150px]">작성자</TableHead>
-          <TableHead className="w-[150px]">반응</TableHead>
-          <TableHead className="w-[150px]">작업</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {posts.map((post) => (
-          <TableRow key={post.id}>
-            <TableCell>{post.id}</TableCell>
-            <TableCell>
-              <div className="space-y-1">
-                <HighlightText
-                  text={post.title}
-                  highlight={search}
-                />
-
-                <TagList post={post} />
-              </div>
-            </TableCell>
-            <TableCell>
-              <div
-                className="flex items-center space-x-2 cursor-pointer"
-                onClick={() => post.author && openUserModal(post.author)}
-              >
-                <img
-                  src={post.author?.image}
-                  alt={post.author?.username}
-                  className="w-8 h-8 rounded-full"
-                />
-                <span>{post.author?.username}</span>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex items-center gap-2">
-                <ThumbsUp className="w-4 h-4" />
-                <span>{post.reactions?.likes || 0}</span>
-                <ThumbsDown className="w-4 h-4" />
-                <span>{post.reactions?.dislikes || 0}</span>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => openPostDetail(post)}
-                >
-                  <MessageSquare className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setSelectedPost(post);
-                    setShowEditDialog(true);
-                  }}
-                >
-                  <Edit2 className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => deletePost(post.id)}
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              </div>
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  );
 
   // 댓글 렌더링
   const renderComments = (postId: number) => (
@@ -310,7 +210,7 @@ const Home = () => {
           </div>
 
           {/* 게시물 테이블 */}
-          {loading ? <div className="flex justify-center p-4">로딩 중...</div> : renderPostTable()}
+          <PostTable />
 
           {/* 페이지네이션 */}
           <div className="flex justify-between items-center">
@@ -474,45 +374,7 @@ const Home = () => {
       </Dialog>
 
       {/* 사용자 모달 */}
-      <Dialog
-        open={showUserModal}
-        onOpenChange={setShowUserModal}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>사용자 정보</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <img
-              src={selectedUser?.image}
-              alt={selectedUser?.username}
-              className="w-24 h-24 rounded-full mx-auto"
-            />
-            <h3 className="text-xl font-semibold text-center">{selectedUser?.username}</h3>
-            <div className="space-y-2">
-              <p>
-                <strong>이름:</strong> {selectedUser?.firstName} {selectedUser?.lastName}
-              </p>
-              <p>
-                <strong>나이:</strong> {selectedUser?.age}
-              </p>
-              <p>
-                <strong>이메일:</strong> {selectedUser?.email}
-              </p>
-              <p>
-                <strong>전화번호:</strong> {selectedUser?.phone}
-              </p>
-              <p>
-                <strong>주소:</strong> {selectedUser?.address?.address}, {selectedUser?.address?.city},{' '}
-                {selectedUser?.address?.state}
-              </p>
-              <p>
-                <strong>직장:</strong> {selectedUser?.company?.name} - {selectedUser?.company?.title}
-              </p>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <UserDialog />
     </Card>
   );
 };

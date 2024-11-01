@@ -8,6 +8,7 @@ import { useFetchPosts } from '@features/home/api/useFetchPost';
 
 import PostTableTitle from '@features/home/ui/PostTableTitle';
 import PostTableAuthor from '@features/home/ui/PostTableAuthor';
+import PostTableReactions from '@entities/home/ui/PostTableReactions';
 
 const PostTable: FC = () => {
   const { posts, loading } = useFetchPosts();
@@ -41,12 +42,7 @@ const PostTable: FC = () => {
             </TableCell>
             {/* 반응 */}
             <TableCell>
-              <div className="flex items-center gap-2">
-                <ThumbsUp className="w-4 h-4" />
-                <span>{post.reactions?.likes || 0}</span>
-                <ThumbsDown className="w-4 h-4" />
-                <span>{post.reactions?.dislikes || 0}</span>
-              </div>
+              <PostTableReactions post={post} />
             </TableCell>
             {/* 작업 */}
             <TableCell>

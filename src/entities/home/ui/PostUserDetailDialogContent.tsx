@@ -1,7 +1,7 @@
 import { FC } from 'react';
 import { User } from '@entities/home/model/types';
 
-const UserDetail: FC<{ user: User }> = ({ user }) => {
+const PostUserDetailDialogContent: FC<{ user: User }> = ({ user }) => {
   return (
     <div className="space-y-4">
       <img
@@ -34,5 +34,5 @@ const UserDetail: FC<{ user: User }> = ({ user }) => {
   );
 };
 
-UserDetail.displayName = 'UserDetail';
-export default UserDetail;
+PostUserDetailDialogContent.displayName = 'PostUserDetailDialogContent';
+export default PostUserDetailDialogContent;

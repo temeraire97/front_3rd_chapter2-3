@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@shared/ui/Dia
 
 import { useUser } from '@/features/home/model/useUser';
 
-import UserDetail from '@/entities/home/ui/UserDetail';
+import PostUserDetailDialogContent from '@/entities/home/ui/PostUserDetailDialogContent';
 
 const PostUserDialog: FC = () => {
   const { user, isPostUserDialogOpen, setIsPostUserDialogOpen } = useUser();
@@ -18,7 +18,7 @@ const PostUserDialog: FC = () => {
           <DialogTitle>사용자 정보</DialogTitle>
         </DialogHeader>
 
-        {user && <UserDetail user={user} />}
+        {user && <PostUserDetailDialogContent user={user} />}
       </DialogContent>
     </Dialog>
   );

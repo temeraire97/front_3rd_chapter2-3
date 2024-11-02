@@ -4,16 +4,25 @@ import { ThumbsUp, Edit2, Trash2, Plus } from 'lucide-react';
 import { Button } from '@shared/ui/Button';
 import type { Comment, Post } from '@/entities/home/model/types';
 import { useComment } from '@/features/home/model/useComment';
-import { useLikeComment } from '@/features/home/api/useFetchComment';
+import { useUpdateComment } from '@/features/home/api/useFetchComment';
+
 // 댓글 좋아요
 const PostCommentLikeButton: FC<{ comment: Comment }> = ({ comment }) => {
-  const { mutate: likeComment } = useLikeComment();
+  const { mutate: updateCommentById } = useUpdateComment();
+
+  function handleCommentLike() {
+    if (!comment) return;
+
+    const newComment = { ...comment, likes: comment.likes + 1 };
+
+    updateCommentById(newComment);
+  }
 
   return (
     <Button
       variant="ghost"
       size="sm"
-      onClick={() => likeComment(comment)}
+      onClick={handleCommentLike}
     >
       <ThumbsUp className="w-3 h-3" />
     </Button>

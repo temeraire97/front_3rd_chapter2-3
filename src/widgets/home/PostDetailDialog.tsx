@@ -7,11 +7,11 @@ import type { Post } from '@/entities/home/model/types';
 
 import { usePostFilter } from '@/features/home/model/usePostFilter';
 import { usePost } from '@/features/home/model/usePost';
-import useComment from '@/features/home/model/useComment';
+import { useCommentList } from '@/features/home/model/useComment';
 import PostCommentActions, { PostCoomentAddButton } from '@/features/home/ui/PostCommentActions';
 
 const PostDetailDialogComment: FC<{ selectedPost: Post | null; search: string }> = ({ selectedPost, search }) => {
-  const { comments } = useComment();
+  const { comments } = useCommentList();
 
   if (!selectedPost) return <p className="text-sm text-gray-500">게시물이 없습니다.</p>;
 

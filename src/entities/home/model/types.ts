@@ -89,13 +89,13 @@ export interface Post extends NewPost {
   author?: User;
 }
 
-export interface NewCommnet {
+export interface NewComment {
   body: string;
   postId: Post['id'] | null;
   userId: User['id'];
 }
 
-export interface Comment extends NewCommnet {
+export interface Comment extends NewComment {
   id: number;
   likes: number;
   user: User;

@@ -3,16 +3,17 @@ import { ThumbsUp, Edit2, Trash2, Plus } from 'lucide-react';
 
 import { Button } from '@shared/ui/Button';
 import type { Comment, Post } from '@/entities/home/model/types';
-import { usePost } from '@/features/home/model/usePost';
 import { useComment } from '@/features/home/model/useComment';
-
+import { useLikeComment } from '@/features/home/api/useFetchComment';
 // 댓글 좋아요
-const PostCommentLikeButton: FC<{ comment: Comment; selectedPost: Post }> = ({ comment, selectedPost }) => {
+const PostCommentLikeButton: FC<{ comment: Comment }> = ({ comment }) => {
+  const { mutate: likeComment } = useLikeComment();
+
   return (
     <Button
       variant="ghost"
       size="sm"
-      onClick={() => likeComment(comment.id, selectedPost.id)}
+      onClick={() => likeComment(comment)}
     >
       <ThumbsUp className="w-3 h-3" />
     </Button>

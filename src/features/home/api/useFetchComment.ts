@@ -16,7 +16,7 @@ export const useFetchComments = (postId: Post['id']) => {
 };
 
 export const useUpdateComment = () => {
-  return useMutation({
+  return useMutation<Comment, Error, Comment>({
     mutationFn: updateCommentById,
     onSuccess: useInvalidateQueries(['comments']),
   });

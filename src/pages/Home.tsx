@@ -19,18 +19,16 @@ import PostTable from '@widgets/home/PostTable';
 import PostUserDialog from '@/widgets/home/PostUserDetailDialog';
 import PostDetailDialog from '@widgets/home/PostDetailDialog';
 import PostEditDialog from '@/widgets/home/PostEditDialog';
-
+import PostCommentEditDialog from '@/widgets/home/PostCommentEditDialog';
 const Home = () => {
   const { tags } = useTag();
 
   const [newPost, setNewPost] = useAtom(newPostAtom);
 
   const [newComment, setNewComment] = useState<Comment>({} as Comment);
-  const [selectedComment, setSelectedComment] = useState<Comment>({} as Comment);
 
   const [showAddDialog, setShowAddDialog] = useState<boolean>(false);
   const [showAddCommentDialog, setShowAddCommentDialog] = useState<boolean>(false);
-  const [showEditCommentDialog, setShowEditCommentDialog] = useState<boolean>(false);
 
   const {
     filters: { search, tag, page, pageSize, sortBy, sortOrder },
@@ -223,24 +221,7 @@ const Home = () => {
       </Dialog>
 
       {/* 댓글 수정 대화상자 */}
-      <Dialog
-        open={showEditCommentDialog}
-        onOpenChange={setShowEditCommentDialog}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>댓글 수정</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <Textarea
-              placeholder="댓글 내용"
-              value={selectedComment?.body || ''}
-              onChange={(e) => selectedComment && setSelectedComment({ ...selectedComment, body: e.target.value })}
-            />
-            <Button onClick={() => selectedComment && updateComment(selectedComment)}>댓글 업데이트</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <PostCommentEditDialog />
 
       {/* 게시물 상세 보기 대화상자 */}
       <PostDetailDialog />

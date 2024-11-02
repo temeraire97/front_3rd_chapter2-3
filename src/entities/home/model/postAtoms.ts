@@ -7,6 +7,8 @@ export const NEW_POST: NewPost = {
   userId: 1,
 };
 
+export const newPostAtom = atom<NewPost>(NEW_POST);
+
 export const selectedPostAtom = atom<Post | null>(null);
 export const isPostDetailDialogOpenAtom = atom<boolean>(false);
-export const newPostAtom = atom<NewPost>(NEW_POST);
+export const isPostEditDialogOpenAtom = atom<boolean>(false);

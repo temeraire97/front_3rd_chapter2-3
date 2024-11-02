@@ -3,16 +3,10 @@ import { Button } from '@shared/ui/Button';
 import { MessageSquare, Edit2, Trash2 } from 'lucide-react';
 
 import type { Post } from '@/entities/home/model/types';
+import { useDeletePost } from '@/features/home/api/useFetchPost';
 import { usePost } from '@/features/home/model/usePost';
-import useComment from '@/features/home/model/useComment';
 
 // 게시물 상세 보기
-// const openPostDetail = (post: Post) => {
-//   setSelectedPost(post);
-//   fetchComments(post.id);
-//   setShowPostDetailDialog(true);
-// };
-
 const PostDetailDialogOpenButton: FC<{ post: Post }> = ({ post }) => {
   const { setSelectedPost, setIsPostDetailDialogOpen } = usePost();
 
@@ -32,15 +26,20 @@ const PostDetailDialogOpenButton: FC<{ post: Post }> = ({ post }) => {
   );
 };
 
+// 게시물 수정 다이얼로그 열기
 const PostEditDialogOpenButton: FC<{ post: Post }> = ({ post }) => {
+  const { setSelectedPost, setIsPostEditDialogOpen } = usePost();
+
+  function handlePostEditDialogOpen() {
+    setSelectedPost(post);
+    setIsPostEditDialogOpen(true);
+  }
+
   return (
     <Button
       variant="ghost"
       size="sm"
-      onClick={() => {
-        setSelectedPost(post);
-        setShowEditDialog(true);
-      }}
+      onClick={handlePostEditDialogOpen}
     >
       <Edit2 className="w-4 h-4" />
     </Button>
@@ -48,11 +47,17 @@ const PostEditDialogOpenButton: FC<{ post: Post }> = ({ post }) => {
 };
 
 const PostDeleteButton: FC<{ post: Post }> = ({ post }) => {
+  const { mutate: deletePost } = useDeletePost();
+
+  function handlePostDelete() {
+    deletePost(post.id);
+  }
+
   return (
     <Button
       variant="ghost"
       size="sm"
-      onClick={() => deletePost(post.id)}
+      onClick={handlePostDelete}
     >
       <Trash2 className="w-4 h-4" />
     </Button>

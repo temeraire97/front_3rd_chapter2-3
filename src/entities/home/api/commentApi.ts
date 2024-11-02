@@ -15,7 +15,7 @@ export const addComment = async (comment: Comment): Promise<Comment> => {
   return await response.json();
 };
 
-export const updateComment = async (comment: Comment): Promise<Comment> => {
+export const updateCommentById = async (comment: Comment): Promise<Comment> => {
   const response = await fetch(`/api/comments/${comment.id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
@@ -24,13 +24,13 @@ export const updateComment = async (comment: Comment): Promise<Comment> => {
   return await response.json();
 };
 
-export const deleteComment = async (id: Comment['id']): Promise<void> => {
+export const deleteCommentById = async (id: Comment['id']): Promise<void> => {
   await fetch(`/api/comments/${id}`, {
     method: 'DELETE',
   });
 };
 
-export const likeComment = async (id: Comment['id']): Promise<void> => {
+export const likeCommentById = async (id: Comment['id']): Promise<void> => {
   await fetch(`/api/comments/${id}/like`, {
     method: 'PATCH',
   });

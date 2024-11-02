@@ -2,7 +2,8 @@ import { useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient, type QueryClient } from '@tanstack/react-query';
 
 import type { ApiResponse } from '@shared/model/types';
-import type { Post } from '@/entities/home/model/types';
+import type { Post } from '@entities/home/model/types';
+import { useInvalidateQueries } from '@entities/home/lib';
 
 import { enrichPostsWithUsers } from '@entities/home/lib/userUtils';
 import { useFetchUsers } from '@/features/home/api/useFetchUser';
@@ -46,33 +47,23 @@ export const useFetchPosts = () => {
   };
 };
 
-const invalidatePosts = (queryClient: QueryClient) => {
-  queryClient.invalidateQueries({ queryKey: ['posts'] });
-};
-
 export const useAddPost = () => {
-  const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: createPost,
-    onSuccess: () => invalidatePosts(queryClient),
+    onSuccess: useInvalidateQueries(['posts']),
   });
 };
 
 export const useUpdatePost = () => {
-  const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: updatePostById,
-    onSuccess: () => invalidatePosts(queryClient),
+    onSuccess: useInvalidateQueries(['posts']),
   });
 };
 
 export const useDeletePost = () => {
-  const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: deletePostById,
-    onSuccess: () => invalidatePosts(queryClient),
+    onSuccess: useInvalidateQueries(['posts']),
   });
 };

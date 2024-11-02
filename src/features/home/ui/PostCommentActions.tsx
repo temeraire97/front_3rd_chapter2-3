@@ -3,6 +3,8 @@ import { ThumbsUp, Edit2, Trash2, Plus } from 'lucide-react';
 
 import { Button } from '@shared/ui/Button';
 import type { Comment, Post } from '@/entities/home/model/types';
+import { usePost } from '@/features/home/model/usePost';
+import { useComment } from '@/features/home/model/useComment';
 
 // 댓글 좋아요
 const PostCommentLikeButton: FC<{ comment: Comment; selectedPost: Post }> = ({ comment, selectedPost }) => {
@@ -19,14 +21,18 @@ const PostCommentLikeButton: FC<{ comment: Comment; selectedPost: Post }> = ({ c
 
 // 댓글 수정 다이얼로그 열기
 const PostCommentEditDialogOpenButton: FC<{ comment: Comment }> = ({ comment }) => {
+  const { setSelectedComment, setIsPostCommentEditDialogOpen } = useComment();
+
+  function handleCommentEditDialogOpen() {
+    setSelectedComment(comment);
+    setIsPostCommentEditDialogOpen(true);
+  }
+
   return (
     <Button
       variant="ghost"
       size="sm"
-      onClick={() => {
-        setSelectedComment(comment);
-        setShowEditCommentDialog(true);
-      }}
+      onClick={handleCommentEditDialogOpen}
     >
       <Edit2 className="w-3 h-3" />
     </Button>
@@ -46,6 +52,7 @@ const PostCommentDeleteButton: FC<{ comment: Comment; selectedPost: Post }> = ({
   );
 };
 
+// 댓글 추가 버튼
 export const PostCoomentAddButton: FC<{ selectedPost: Post }> = ({ selectedPost }) => {
   return (
     <Button
